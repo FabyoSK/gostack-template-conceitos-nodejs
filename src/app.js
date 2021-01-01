@@ -15,22 +15,23 @@ app.get("/repositories", (request, response) => {
 });
 
 app.post("/repositories", (request, response) => {
-  const { title, url, tech} = request.body
-  const repo = {id:uuid(), title, url, tech, likes:0}
+  const { title, url, techs} = request.body
+  const repo = {id:uuid(), title, url, techs, likes:0}
   repositories.push(repo)
   return response.json(repo)
 });
 
 app.put("/repositories/:id", (request, response) => {
   const { id } = request.params
-  const {title, url, tech} = request.body
-  const repo = {
-    title, url, tech
-  }
-  const repoIndex = repositories.findIndex(repo => repositories.id === id)
+  const {title, url, techs} = request.body
 
-  if (repoIndex < 0) {
-    return response.status(400).json({ERROR: "repo not found"})
+  const repoIndex = repositories.findIndex(repo => repo.id === id)
+
+  if(repoIndex === -1){
+    return response.status(400).json({error: "repo not exist"})
+  }
+  const repo = {
+    id, title, url, techs, likes : repositories[repoIndex].likes
   }
   repositories[repoIndex] = repo
   return response.json(repo)
@@ -38,24 +39,25 @@ app.put("/repositories/:id", (request, response) => {
 
 app.delete("/repositories/:id", (request, response) => {
   const {id } = request.params
-  const repoIndex = repositories.findIndex(repo => repositories.id === id)
+  const repoIndex = repositories.findIndex(repo => repo.id === id)
 
-  if (repoIndex < 0) {
-    return response.status(400).json({ERROR: "repo not found"})
+  if (repoIndex >= 0) {
+    repositories.splice(repoIndex, 1)
+  } else {
+    return response.status(400).json({ERROR: "error"})
   }
-  repositories.splice(repo, 1)
-
   return response.status(204).send()
 });
 
 app.post("/repositories/:id/like", (request, response) => {
   const {id } = request.params
-  const repoIndex = repositories.findIndex(repo => repositories.id === id)
+  const repoIndex = repositories.findIndex(repo => repo.id === id)
 
-  if (repoIndex < 0) {
-    return response.status(400).json({ERROR: "repo not found"})
+  if (repoIndex >= 0) { 
+     repositories[repoIndex].likes++
+  } else {
+    return response.status(400).json({ERROR: "error"})
   }
-  repositories[repoIndex].likes++
 
   return response.json(repositories[repoIndex])
 });
